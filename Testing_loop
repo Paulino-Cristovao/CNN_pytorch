@@ -1,0 +1,39 @@
+# Example of testing Loop
+
+
+# Validation
+def validate(val_loader_train, model, criterion, epoch):
+    losses = AverageMeter()
+    top1 = AverageMeter()
+
+    # switch to evaluate mode
+    model.eval()
+    with torch.no_grad():
+        for batch_idx, data in enumerate(val_loader_train):
+            # pass data to cuda
+            input = data[0].to(device)
+            label = data[1].to(device) 
+
+            # compute output
+            output, feature = model(input)
+
+            loss = criterion(output, label)
+
+            #predict --> convert output probabilities to predicted class
+            pred = output.argmax(1)
+
+            # measure accuracy and record loss
+            prec1, _ = accuracy(output, label, topk=(1, 5))
+            losses.update(loss.item())
+            top1.update(prec1.item(), input.size(0))
+            
+            # plot progress
+        if batch_idx == len(train_loader) :
+          print('({batch}/{size}) |  Loss: {loss:.4f} | top1: {top1: .4f} '.format(
+                      batch=batch_idx + 1,
+                      size=len(train_loader),
+                      loss=losses.avg,
+                      top1=top1.avg,
+                      ))
+
+    return (losses.avg, top1.avg)
